@@ -1,0 +1,20 @@
+{
+  "name": "iwish-backend",
+  "version": "1.0.0",
+  "description": "Backend for the iwish app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sfbarts/iwish-backend.git"
+  },
+  "author": "Sebastian Beltran",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sfbarts/iwish-backend/issues"
+  },
+  "homepage": "https://github.com/sfbarts/iwish-backend#readme"
+}
