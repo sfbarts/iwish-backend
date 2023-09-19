@@ -1,3 +1,4 @@
+const usersRouter = require('./controllers/users')
 const express = require('express')
 const { MONGO_URI } = require('./utils/config')
 
@@ -16,8 +17,8 @@ mongoose
     console.log('error connecting to MongoDB:', error.message)
   })
 
-app.get('/demo', (request, response) => {
-  response.send('Hello World')
-})
+app.use(express.json())
+
+app.use('/api/users', usersRouter)
 
 module.exports = app
