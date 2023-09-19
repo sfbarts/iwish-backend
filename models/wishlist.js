@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const wishlistSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: true, unique: true },
   total: { type: Number, default: 0.0 },
   category: {
     type: mongoose.Schema.Types.ObjectId,

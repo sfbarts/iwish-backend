@@ -1,5 +1,6 @@
 const usersRouter = require('./controllers/users')
 const categoriesRouter = require('./controllers/categories')
+const wishlistsRouter = require('./controllers/wishlists')
 const express = require('express')
 const { MONGO_URI } = require('./utils/config')
 
@@ -22,5 +23,6 @@ app.use(express.json())
 
 app.use('/api/users', usersRouter)
 app.use('/api/categories', categoriesRouter)
+app.use('/api/wishlists', wishlistsRouter)
 
 module.exports = app
