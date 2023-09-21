@@ -3,6 +3,7 @@ const categoriesRouter = require('./controllers/categories')
 const wishlistsRouter = require('./controllers/wishlists')
 const itemsRouter = require('./controllers/items')
 const express = require('express')
+const cors = require('cors')
 const { MONGO_URI } = require('./utils/config')
 
 const app = express()
@@ -20,6 +21,7 @@ mongoose
     console.log('error connecting to MongoDB:', error.message)
   })
 
+app.use(cors())
 app.use(express.json())
 
 app.use('/api/users', usersRouter)
