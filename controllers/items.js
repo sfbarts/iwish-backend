@@ -55,4 +55,26 @@ itemsRouter.post('/', async (request, response) => {
   response.status(201).json(addItem)
 })
 
+itemsRouter.put('/:itemId', async (request, response) => {
+  const body = request.body
+
+  const item = {
+    name: body.name,
+    url: body.url,
+    price: Number(body.price),
+    acquired: body.acquired,
+  }
+
+  const updatedItem = await Item.findByIdAndUpdate(
+    request.params.itemId,
+    item,
+    {
+      new: true,
+      context: 'query',
+    }
+  )
+
+  response.json(updatedItem)
+})
+
 module.exports = itemsRouter
