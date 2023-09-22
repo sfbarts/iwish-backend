@@ -77,4 +77,9 @@ itemsRouter.put('/:itemId', async (request, response) => {
   response.json(updatedItem)
 })
 
+itemsRouter.delete('/:id', async (request, response) => {
+  await Item.findByIdAndDelete(request.params.id)
+  return response.status(204).end()
+})
+
 module.exports = itemsRouter
