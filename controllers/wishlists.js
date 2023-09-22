@@ -50,4 +50,9 @@ wishlistsRouter.put('/:wishlistId', async (request, response) => {
   response.json(updatedItem)
 })
 
+wishlistsRouter.delete('/:wishlistId', async (request, response) => {
+  await Wishlist.findByIdAndDelete(request.params.wishlistId)
+  return response.status(204).end()
+})
+
 module.exports = wishlistsRouter
