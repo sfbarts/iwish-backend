@@ -74,6 +74,29 @@ itemsRouter.put('/:itemId', async (request, response) => {
     }
   )
 
+  //Provisional way to save the wishlist total
+  const total = await Wishlist.aggregate([
+    {
+      $lookup: {
+        from: 'items',
+        localField: '_id',
+        foreignField: 'wishlist',
+        as: 'items',
+      },
+    },
+    {
+      $project: {
+        name: 1,
+        total: {
+          $sum: '$items.price',
+        },
+      },
+    },
+    {
+      $merge: 'wishlists', // Save the results back to the 'wishlists' collection
+    },
+  ])
+
   response.json(updatedItem)
 })
 
