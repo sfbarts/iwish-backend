@@ -32,4 +32,22 @@ wishlistsRouter.post('/', async (request, response) => {
   response.status(201).json(addWishlist)
 })
 
+wishlistsRouter.put('/:wishlistId', async (request, response) => {
+  const body = request.body
+
+  const item = {
+    name: body.name,
+  }
+
+  const updatedItem = await Wishlist.findByIdAndUpdate(
+    request.params.wishlistId,
+    item,
+    {
+      new: true,
+      context: 'query',
+    }
+  )
+  response.json(updatedItem)
+})
+
 module.exports = wishlistsRouter
