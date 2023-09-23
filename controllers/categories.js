@@ -1,19 +1,28 @@
 const categoriesRouter = require('express').Router()
 const Category = require('../models/category')
+const Wishlist = require('../models/wishlist')
 
-//Get list of categories
+//Get list of categories by userId
 categoriesRouter.get('/', async (request, response) => {
-  const categories = await Category.find({})
+  const tempUserId = '650a14c573d510a95e0fb3bf'
+  //temporarily return the userid
+  const categories = await Category.find({
+    user: tempUserId,
+  }).populate('user', { name: 1, id: 1 })
   response.json(categories)
 })
 
-//Get list of categories by userId
-categoriesRouter.get('/:userId', async (request, response) => {
-  //temporarily return the userid
-  const categories = await Category.find({
-    user: request.params.userId,
-  }).populate('user', { name: 1, id: 1 })
-  response.json(categories)
+//Get whole category + items based on category Id
+categoriesRouter.get('/:categoryId', async (request, response) => {
+  let categoryBundle = []
+  const category = await Category.findById(request.params.categoryId)
+  const wishlists = await Wishlist.find({
+    category: request.params.categoryId,
+  }).populate('category', { name: 1 })
+  categoryBundle.push(category)
+  categoryBundle.push(wishlists)
+
+  response.json(categoryBundle)
 })
 
 //Add new category
