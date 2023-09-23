@@ -29,50 +29,27 @@ itemsRouter.post('/', async (request, response) => {
 
   const addItem = await item.save()
 
-  //Provisional way to save the wishlist total
-  const total = await Wishlist.aggregate([
-    {
-      $lookup: {
-        from: 'items',
-        localField: '_id',
-        foreignField: 'wishlist',
-        as: 'items',
-      },
-    },
-    {
-      $project: {
-        name: 1,
-        total: {
-          $sum: '$items.price',
-        },
-      },
-    },
-    {
-      $merge: 'wishlists', // Save the results back to the 'wishlists' collection
-    },
-  ])
-
   response.status(201).json(addItem)
 })
 
-itemsRouter.put('/:itemId', async (request, response) => {
+//test batch update route
+itemsRouter.put('/', async (request, response) => {
   const body = request.body
+  const batchUpdateItems = body.map((item) => ({
+    updateOne: {
+      filter: { _id: item.id },
+      update: {
+        $set: {
+          name: item.name,
+          url: item.url,
+          price: item.price,
+          acquired: item.acquired,
+        },
+      },
+    },
+  }))
 
-  const item = {
-    name: body.name,
-    url: body.url,
-    price: Number(body.price),
-    acquired: body.acquired,
-  }
-
-  const updatedItem = await Item.findByIdAndUpdate(
-    request.params.itemId,
-    item,
-    {
-      new: true,
-      context: 'query',
-    }
-  )
+  const batchUpdate = await Item.bulkWrite(batchUpdateItems)
 
   //Provisional way to save the wishlist total
   const total = await Wishlist.aggregate([
@@ -96,8 +73,7 @@ itemsRouter.put('/:itemId', async (request, response) => {
       $merge: 'wishlists', // Save the results back to the 'wishlists' collection
     },
   ])
-
-  response.json(updatedItem)
+  response.json({ message: 'Batch update was successful', result: batchUpdate })
 })
 
 itemsRouter.delete('/:id', async (request, response) => {
