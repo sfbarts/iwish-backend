@@ -28,26 +28,25 @@ wishlistsRouter.post('/', async (request, response) => {
   })
 
   const addWishlist = await wishlist.save()
-
   response.status(201).json(addWishlist)
 })
 
 wishlistsRouter.put('/:wishlistId', async (request, response) => {
   const body = request.body
 
-  const item = {
+  const wishlist = {
     name: body.name,
   }
 
-  const updatedItem = await Wishlist.findByIdAndUpdate(
+  const updatedWishlist = await Wishlist.findByIdAndUpdate(
     request.params.wishlistId,
-    item,
+    wishlist,
     {
       new: true,
       context: 'query',
     }
   )
-  response.json(updatedItem)
+  response.json(updatedWishlist)
 })
 
 wishlistsRouter.delete('/:wishlistId', async (request, response) => {
