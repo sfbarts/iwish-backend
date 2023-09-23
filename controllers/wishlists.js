@@ -7,12 +7,10 @@ wishlistsRouter.get('/', async (request, response) => {
   response.json(wishlists)
 })
 
-//Get list of wishlists based on category id
-wishlistsRouter.get('/:categoryId', async (request, response) => {
-  const wishlists = await Wishlist.find({
-    category: request.params.categoryId,
-  }).populate('category', { name: 1 })
-  response.json(wishlists)
+//Get wishlist based on its id
+wishlistsRouter.get('/:wishlistId', async (request, response) => {
+  const wishlist = await Wishlist.findById(request.params.wishlistId)
+  response.json(wishlist)
 })
 
 //Add new wishlist
