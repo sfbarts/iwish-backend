@@ -2,16 +2,24 @@ const categoriesRouter = require('express').Router()
 const Category = require('../models/category')
 const Wishlist = require('../models/wishlist')
 const { validateAccessToken } = require('../middleware/auth0.middleware')
+const { userExtractor } = require('../middleware/userExtractor')
 
 //Get list of categories by userId
-categoriesRouter.get('/', validateAccessToken, async (request, response) => {
-  const tempUserId = '650a14c573d510a95e0fb3bf'
-  //temporarily return the userid
-  const categories = await Category.find({
-    user: tempUserId,
-  }).populate('user', { name: 1, id: 1 })
-  response.json(categories)
-})
+categoriesRouter.get(
+  '/',
+  validateAccessToken,
+  userExtractor,
+  async (request, response) => {
+    const userId = request.user.id
+
+    const categories = await Category.find({
+      user: userId,
+    }).populate('user', { auth0_id: 1, id: 1 })
+
+    console.log(categories)
+    response.json(categories)
+  }
+)
 
 //Get whole category + items based on category Id
 categoriesRouter.get('/:categoryId', async (request, response) => {
