@@ -9,15 +9,21 @@ usersRouter.get('/', async (request, response) => {
 
 // Temp router for creating users
 usersRouter.post('/', async (request, response) => {
-  const { email, name, password } = request.body
+  console.log(request.body)
+  const auth0_id = request.body.sub
 
-  const passwordHash = password
+  let user = await User.findOne({ auth0_id })
 
-  const user = new User({ email, name, passwordHash })
+  if (user) {
+    return response
+      .status(201)
+      .json({ message: 'User already exists', result: user })
+  }
 
+  user = new User({ auth0_id })
   const savedUser = await user.save()
 
-  response.status(201).json(savedUser)
+  response.status(201).json({ message: 'User created', result: savedUser })
 })
 
 module.exports = usersRouter
