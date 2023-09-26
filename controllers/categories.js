@@ -4,6 +4,9 @@ const Wishlist = require('../models/wishlist')
 const { validateAccessToken } = require('../middleware/auth0.middleware')
 const { userExtractor } = require('../middleware/userExtractor')
 
+//CATEGORIES ROUTER
+//All routes are protected. This is because users need to be authenticated and data is user specific.
+
 //Get list of categories by userId
 categoriesRouter.get(
   '/',
@@ -16,62 +19,103 @@ categoriesRouter.get(
       user: userId,
     }).populate('user', { auth0_id: 1, id: 1 })
 
-    console.log(categories)
     response.json(categories)
   }
 )
 
-//Get whole category + items based on category Id
-categoriesRouter.get('/:categoryId', async (request, response) => {
-  let categoryBundle = []
-  const category = await Category.findById(request.params.categoryId)
-  const wishlists = await Wishlist.find({
-    category: request.params.categoryId,
-  }).populate('category', { name: 1 })
-  categoryBundle.push(category)
-  categoryBundle.push(wishlists)
+//Get whole category + wishlists based on category Id
+categoriesRouter.get(
+  '/:categoryId',
+  validateAccessToken,
+  userExtractor,
+  async (request, response) => {
+    const userId = request.user.id
+    let categoryBundle = []
+    const category = await Category.findById(request.params.categoryId)
 
-  response.json(categoryBundle)
-})
+    //if user doesn't own the category return not authorized
+    if (userId !== category.user.toString()) {
+      return response.status(401).send('Not authorized')
+    }
+
+    const wishlists = await Wishlist.find({
+      category: request.params.categoryId,
+    }).populate('category', { name: 1 })
+    categoryBundle.push(category)
+    categoryBundle.push(wishlists)
+
+    response.json(categoryBundle)
+  }
+)
 
 //Add new category
-categoriesRouter.post('/', async (request, response) => {
-  const body = request.body
+categoriesRouter.post(
+  '/',
+  validateAccessToken,
+  userExtractor,
+  async (request, response) => {
+    const body = request.body
 
-  //temporary user id
-  let userID = body.user
+    const userId = request.user.id
 
-  const category = new Category({
-    name: body.name,
-    user: userID,
-  })
+    const category = new Category({
+      name: body.name,
+      user: userId,
+    })
 
-  const addCategory = await category.save()
+    const addCategory = await category.save()
 
-  response.status(201).json(addCategory)
-})
-
-categoriesRouter.put('/:categoryId', async (request, response) => {
-  const body = request.body
-
-  const category = {
-    name: body.name,
+    response.status(201).json(addCategory)
   }
+)
 
-  const updatedCategory = await Category.findByIdAndUpdate(
-    request.params.categoryId,
-    category,
-    {
-      new: true,
-      context: 'query',
+categoriesRouter.put(
+  '/:categoryId',
+  validateAccessToken,
+  userExtractor,
+  async (request, response) => {
+    const userId = request.user.id
+    const body = request.body
+
+    const category = await Category.findById(request.params.categoryId)
+
+    //if user doesn't own the category return not authorized
+    if (category.user.toString() !== userId) {
+      return response.status(401).send('Not authorized')
     }
-  )
-  response.json(updatedCategory)
-})
 
-categoriesRouter.delete('/:categoryId', async (request, response) => {
-  await Category.findByIdAndDelete(request.params.categoryId)
-  return response.status(204).end()
-})
+    const updates = {
+      name: body.name,
+    }
+
+    const updatedCategory = await Category.findByIdAndUpdate(
+      request.params.categoryId,
+      updates,
+      {
+        new: true,
+        context: 'query',
+      }
+    )
+    response.json(updatedCategory)
+  }
+)
+
+categoriesRouter.delete(
+  '/:categoryId',
+  validateAccessToken,
+  userExtractor,
+  async (request, response) => {
+    const userId = request.user.id
+    const category = await Category.findById(request.params.categoryId)
+
+    //if user doesn't own the category return not authorized
+    if (category.user.toString() !== userId) {
+      return response.status(401).send('Not authorized')
+    }
+
+    await Category.findByIdAndDelete(request.params.categoryId)
+    return response.status(204).end()
+  }
+)
 
 module.exports = categoriesRouter
