@@ -1,5 +1,6 @@
 const usersRouter = require('express').Router()
 const User = require('../models/user')
+const { validateAccessToken } = require('../middleware/auth0.middleware')
 
 // Temp router for listing users
 usersRouter.get('/', async (request, response) => {
@@ -8,9 +9,9 @@ usersRouter.get('/', async (request, response) => {
 })
 
 // Temp router for creating users
-usersRouter.post('/', async (request, response) => {
-  console.log(request.body)
-  const auth0_id = request.body.sub
+usersRouter.post('/', validateAccessToken, async (request, response) => {
+  const auth = request.auth
+  const auth0_id = auth.payload.sub
 
   let user = await User.findOne({ auth0_id })
 
