@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const Wishlist = require('./wishlist')
 
 const categorySchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -15,6 +16,18 @@ categorySchema.set('toJSON', {
     delete returnedObject.__v
   },
 })
+
+// Remove all wishlists associated with this category
+categorySchema.pre(
+  'findOneAndDelete',
+  { query: true, document: false },
+  async function (next) {
+    const category = await this.model.findOne(this.getQuery())
+
+    await Wishlist.deleteMany({ category: category._id })
+    next()
+  }
+)
 
 const Category = mongoose.model('Category', categorySchema)
 
