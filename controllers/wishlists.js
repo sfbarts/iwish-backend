@@ -1,5 +1,8 @@
 const wishlistsRouter = require('express').Router()
 const Wishlist = require('../models/wishlist')
+const Item = require('../models/item')
+const { validateAccessToken } = require('../middleware/auth0.middleware')
+const { userExtractor } = require('../middleware/userExtractor')
 
 //Get list of wishlists
 wishlistsRouter.get('/', async (request, response) => {
@@ -7,49 +10,97 @@ wishlistsRouter.get('/', async (request, response) => {
   response.json(wishlists)
 })
 
-//Get wishlist based on its id
-wishlistsRouter.get('/:wishlistId', async (request, response) => {
-  const wishlist = await Wishlist.findById(request.params.wishlistId)
-  response.json(wishlist)
-})
+//Get wishlist and Items based on its id
+wishlistsRouter.get(
+  '/:wishlistId',
+  validateAccessToken,
+  userExtractor,
+  async (request, response) => {
+    let wishlistBundle = []
+    const userId = request.user.id
+    const wishlist = await Wishlist.findById(request.params.wishlistId)
+
+    //if user doesn't own the wishlist return not authorized
+    if (userId !== wishlist.user.toString()) {
+      return response.status(401).send('Not authorized')
+    }
+
+    const wishlistItems = await Item.find({
+      wishlist: request.params.wishlistId,
+    })
+    wishlistBundle.push(wishlist, wishlistItems)
+    response.json(wishlistBundle)
+  }
+)
 
 //Add new wishlist
-wishlistsRouter.post('/', async (request, response) => {
-  const body = request.body
+wishlistsRouter.post(
+  '/',
+  validateAccessToken,
+  userExtractor,
+  async (request, response) => {
+    const userId = request.user.id
+    const body = request.body
 
-  //temporary category id
-  // const categoryID = '650a18246081432e28194a05'
+    const wishlist = new Wishlist({
+      name: body.name,
+      category: body.category,
+      user: userId,
+    })
 
-  const wishlist = new Wishlist({
-    name: body.name,
-    category: body.category,
-  })
-
-  const addWishlist = await wishlist.save()
-  response.status(201).json(addWishlist)
-})
-
-wishlistsRouter.put('/:wishlistId', async (request, response) => {
-  const body = request.body
-
-  const wishlist = {
-    name: body.name,
+    const addWishlist = await wishlist.save()
+    response.status(201).json(addWishlist)
   }
+)
 
-  const updatedWishlist = await Wishlist.findByIdAndUpdate(
-    request.params.wishlistId,
-    wishlist,
-    {
-      new: true,
-      context: 'query',
+wishlistsRouter.put(
+  '/:wishlistId',
+  validateAccessToken,
+  userExtractor,
+  async (request, response) => {
+    const userId = request.user.id
+    const body = request.body
+
+    const wishlist = await Wishlist.findById(request.params.wishlistId)
+
+    //if user doesn't own the wishlist return not authorized
+    if (wishlist.user.toString() !== userId) {
+      return response.status(401).send('Not authorized')
     }
-  )
-  response.json(updatedWishlist)
-})
 
-wishlistsRouter.delete('/:wishlistId', async (request, response) => {
-  await Wishlist.findByIdAndDelete(request.params.wishlistId)
-  return response.status(204).end()
-})
+    const updates = {
+      name: body.name,
+    }
+
+    const updatedWishlist = await Wishlist.findByIdAndUpdate(
+      request.params.wishlistId,
+      updates,
+      {
+        new: true,
+        context: 'query',
+      }
+    )
+    response.json(updatedWishlist)
+  }
+)
+
+wishlistsRouter.delete(
+  '/:wishlistId',
+  validateAccessToken,
+  userExtractor,
+  async (request, response) => {
+    const userId = request.user.id
+
+    const wishlist = await Wishlist.findById(request.params.wishlistId)
+
+    //if user doesn't own the wishlist return not authorized
+    if (wishlist.user.toString() !== userId) {
+      return response.status(401).send('Not authorized')
+    }
+
+    await Wishlist.findOneAndDelete({ _id: request.params.wishlistId })
+    return response.status(204).end()
+  }
+)
 
 module.exports = wishlistsRouter
