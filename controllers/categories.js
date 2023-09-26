@@ -113,7 +113,7 @@ categoriesRouter.delete(
       return response.status(401).send('Not authorized')
     }
 
-    await Category.findByIdAndDelete(request.params.categoryId)
+    await Category.findOneAndDelete({ _id: request.params.categoryId })
     return response.status(204).end()
   }
 )
