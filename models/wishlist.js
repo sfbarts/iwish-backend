@@ -28,8 +28,9 @@ wishlistSchema.pre(
   { query: true, document: false },
   async function (next) {
     const wishlist = await this.model.findOne(this.getQuery())
-    console.log(wishlist._id)
-    await Item.deleteMany({ wishlist: wishlist._id })
+    if (wishlist) {
+      await Item.deleteMany({ wishlist: wishlist._id })
+    }
     next()
   }
 )
@@ -40,9 +41,10 @@ wishlistSchema.pre(
   { query: true, document: false },
   async function (next) {
     const wishlist = await this.model.findOne(this.getQuery())
-    console.log(wishlist._id)
     // Remove all wishlists associated with this category
-    await Item.deleteMany({ wishlist: wishlist._id })
+    if (wishlist) {
+      await Item.deleteMany({ wishlist: wishlist._id })
+    }
     next()
   }
 )
