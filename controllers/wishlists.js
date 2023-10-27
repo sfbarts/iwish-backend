@@ -18,7 +18,9 @@ wishlistsRouter.get(
   async (request, response) => {
     let wishlistBundle = []
     const userId = request.user.id
-    const wishlist = await Wishlist.findById(request.params.wishlistId)
+    const wishlist = await Wishlist.findById(
+      request.params.wishlistId
+    ).populate('category', { name: 1 })
 
     //if user doesn't own the wishlist return not authorized
     if (userId !== wishlist.user.toString()) {
