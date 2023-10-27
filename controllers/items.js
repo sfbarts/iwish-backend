@@ -48,7 +48,6 @@ itemsRouter.post(
     const item = new Item({
       name: body.name,
       url: body.url,
-      price: Number(body.price),
       wishlist: body.wishlist,
       user: userId,
     })
