@@ -10,6 +10,31 @@ itemsRouter.get('/', async (request, response) => {
   response.json(items)
 })
 
+const getWishlistTotal = async () => {
+  //Provisional way to save the wishlist total
+  const total = await Wishlist.aggregate([
+    {
+      $lookup: {
+        from: 'items',
+        localField: '_id',
+        foreignField: 'wishlist',
+        as: 'items',
+      },
+    },
+    {
+      $project: {
+        name: 1,
+        total: {
+          $round: [{ $sum: '$items.price' }, 2],
+        },
+      },
+    },
+    {
+      $merge: 'wishlists', // Save the results back to the 'wishlists' collection
+    },
+  ])
+}
+
 //Get list of items based on the wishlist id
 itemsRouter.get(
   '/:wishlistId',
@@ -90,28 +115,7 @@ itemsRouter.put(
 
     const batchUpdate = await Item.bulkWrite(batchUpdateItems)
 
-    //Provisional way to save the wishlist total
-    const total = await Wishlist.aggregate([
-      {
-        $lookup: {
-          from: 'items',
-          localField: '_id',
-          foreignField: 'wishlist',
-          as: 'items',
-        },
-      },
-      {
-        $project: {
-          name: 1,
-          total: {
-            $sum: '$items.price',
-          },
-        },
-      },
-      {
-        $merge: 'wishlists', // Save the results back to the 'wishlists' collection
-      },
-    ])
+    await getWishlistTotal()
     response.json({
       message: 'Batch update was successful',
       result: batchUpdate,
@@ -133,6 +137,7 @@ itemsRouter.delete(
     }
 
     await Item.findByIdAndDelete(request.params.id)
+    await getWishlistTotal()
     return response.status(204).end()
   }
 )
