@@ -4,12 +4,6 @@ const Wishlist = require('../models/wishlist')
 const { validateAccessToken } = require('../middleware/auth0.middleware')
 const { userExtractor } = require('../middleware/userExtractor')
 
-//Get list of items
-itemsRouter.get('/', async (request, response) => {
-  const items = await Item.find({}).populate('wishlist', { name: 1 })
-  response.json(items)
-})
-
 const getWishlistTotal = async () => {
   //Provisional way to save the wishlist total
   const total = await Wishlist.aggregate([
