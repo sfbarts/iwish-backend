@@ -1,12 +1,14 @@
+const express = require('express')
+const app = express()
+require('express-async-errors')
+const cors = require('cors')
 const usersRouter = require('./controllers/users')
 const categoriesRouter = require('./controllers/categories')
 const wishlistsRouter = require('./controllers/wishlists')
 const itemsRouter = require('./controllers/items')
-const express = require('express')
-const cors = require('cors')
+const { errorHandler } = require('./middleware/errorHandler')
 const { MONGO_URI } = require('./utils/config')
 
-const app = express()
 const mongoose = require('mongoose')
 
 mongoose.set('strictQuery', false)
@@ -28,5 +30,7 @@ app.use('/api/users', usersRouter)
 app.use('/api/categories', categoriesRouter)
 app.use('/api/wishlists', wishlistsRouter)
 app.use('/api/items', itemsRouter)
+
+app.use(errorHandler)
 
 module.exports = app
