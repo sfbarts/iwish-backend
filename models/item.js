@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 
 const itemSchema = new mongoose.Schema({
-  name: { type: String },
-  url: { type: String },
+  name: { type: String, maxLength: 100 },
+  url: { type: String, maxLength: 400 },
   price: { type: Number, default: 0.0 },
   acquired: { type: Boolean, default: false },
   wishlist: {

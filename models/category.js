@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const Wishlist = require('./wishlist')
 
 const categorySchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: true, maxLength: 50 },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
