@@ -30,6 +30,9 @@ app.use('/api/users', usersRouter)
 app.use('/api/categories', categoriesRouter)
 app.use('/api/wishlists', wishlistsRouter)
 app.use('/api/items', itemsRouter)
+app.use('/health', (req, res) => {
+  res.send('ok')
+})
 
 app.use(errorHandler)
 
