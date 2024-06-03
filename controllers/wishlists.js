@@ -16,21 +16,24 @@ wishlistsRouter.get(
   validateAccessToken,
   userExtractor,
   async (request, response) => {
-    let wishlistBundle = []
+    // Get the user id from the request(placed by the user extractor)
     const userId = request.user.id
-    const wishlist = await Wishlist.findById(
-      request.params.wishlistId
-    ).populate('category', { name: 1 })
+
+    //Combine queries for wishlist info and items in a single request.
+    const [wishlist, wishlistItems] = await Promise.all([
+      Wishlist.findById(request.params.wishlistId).populate('category', {
+        name: 1,
+      }),
+      Item.find({ wishlist: request.params.wishlistId }),
+    ])
 
     //if user doesn't own the wishlist return not authorized
     if (userId !== wishlist.user.toString()) {
       return response.status(401).send('Not authorized')
     }
 
-    const wishlistItems = await Item.find({
-      wishlist: request.params.wishlistId,
-    })
-    wishlistBundle.push(wishlist, wishlistItems)
+    // Send info and items as a bundled object.
+    const wishlistBundle = { info: wishlist, items: wishlistItems }
     response.json(wishlistBundle)
   }
 )
